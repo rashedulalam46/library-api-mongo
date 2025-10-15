@@ -35,7 +35,7 @@ public class Books
 	public DateTime? publish_date { get; set; }
 	
 	[StringLength(20, ErrorMessage = "ISBN cannot exceed 20 characters.")]
-	public string? ISBN { get; set; }
+	public string? isbn { get; set; }
 
 	[Range(0, 10000, ErrorMessage = "Price must be between 0 and 10,000.")]
 	public decimal? price { get; set; }

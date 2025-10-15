@@ -3,6 +3,7 @@ using Library.Application.Interfaces;
 using Library.Domain.Entities;
 using Library.Infrastructure.Data;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Library.Infrastructure.Repositories;
@@ -25,38 +26,43 @@ public class BookRepository : IBookRepository
         _publishersCollection = database.GetCollection<Publishers>(mongoSettings.Value.PublishersCollectionName);
     }
 
+    // Get all books with joined names
     public async Task<IEnumerable<BookReadDto>> GetAllAsync()
     {
-        // MongoDB doesn't support joins like SQL, so we do it manually
         var books = await _booksCollection.Find(_ => true).ToListAsync();
         var authors = await _authorsCollection.Find(_ => true).ToListAsync();
         var categories = await _categoriesCollection.Find(_ => true).ToListAsync();
         var publishers = await _publishersCollection.Find(_ => true).ToListAsync();
 
-        var result = from b in books
-                     join a in authors on b.author_id equals a.author_id
-                     join c in categories on b.category_id equals c.category_id
-                     join p in publishers on b.publisher_id equals p.publisher_id
-                     select new BookReadDto
-                     {
-                         book_id = b.book_id,
-                         title = b.title,
-                         description = b.description,
-                         author_id = b.author_id,
-                         category_id = b.category_id,
-                         publisher_id = b.publisher_id,
-                         author_name = a.author_name,
-                         category_name = c.category_name,
-                         publisher_name = p.publisher_name,
-                         isbn = b.ISBN,
-                         price = b.price,
-                         active = b.active,
-                         publish_date = b.publish_date
-                     };
+        var result = books.Select(b =>
+        {
+            var author = authors.FirstOrDefault(a => a.author_id == b.author_id);
+            var category = categories.FirstOrDefault(c => c.category_id == b.category_id);
+            var publisher = publishers.FirstOrDefault(p => p.publisher_id == b.publisher_id);
 
-        return result.OrderBy(b => b.title);
+            return new BookReadDto
+            {
+                book_id = b.book_id,
+                title = b.title,
+                description = b.description,
+                author_id = b.author_id,
+                category_id = b.category_id,
+                publisher_id = b.publisher_id,
+                author_name = author?.author_name,
+                category_name = category?.category_name,
+                publisher_name = publisher?.publisher_name,
+                isbn = b.isbn,
+                price = b.price,
+                publish_date = b.publish_date,
+                active = b.active
+            };
+        })
+        .OrderBy(b => b.title);
+
+        return result;
     }
 
+    // Get single book by book_id
     public async Task<Books?> GetByIdAsync(int id)
     {
         return await _booksCollection
@@ -64,12 +70,14 @@ public class BookRepository : IBookRepository
             .FirstOrDefaultAsync();
     }
 
+    // Add new book
     public async Task<Books> AddAsync(Books book)
     {
         await _booksCollection.InsertOneAsync(book);
         return book;
     }
 
+    // Update existing book
     public async Task<Books?> UpdateAsync(Books book)
     {
         var existing = await _booksCollection
@@ -83,12 +91,14 @@ public class BookRepository : IBookRepository
         return book;
     }
 
+    // Delete book
     public async Task<bool> DeleteAsync(int id)
     {
         var result = await _booksCollection.DeleteOneAsync(b => b.book_id == id);
         return result.DeletedCount > 0;
     }
 
+    // Check existence by book_id
     public async Task<bool> ExistsByBookIdAsync(int bookId)
     {
         return await _booksCollection
