@@ -1,10 +1,17 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Library.Domain.Entities;
 
 public class Books
 {
+	// MongoDB _id field
+	[BsonId]
+	[BsonRepresentation(BsonType.ObjectId)]
+	public string Id { get; set; } = null!;
+	
 	[Key]
 	public int book_id { get; set; }
 

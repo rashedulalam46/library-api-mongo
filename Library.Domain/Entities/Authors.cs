@@ -2,11 +2,18 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Library.Domain.Entities;
 
 public class Authors
 {
+    // MongoDB _id field
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = null!;
+    
     [Key]
     public int author_id { get; set; }
 

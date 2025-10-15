@@ -1,11 +1,18 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Library.Domain.Entities;
 
 public class Publishers
 {
+	// MongoDB _id field
+	[BsonId]
+	[BsonRepresentation(BsonType.ObjectId)]
+	public string Id { get; set; } = null!;
+	
 	[Key]
 	public int publisher_id { get; set; }
 
