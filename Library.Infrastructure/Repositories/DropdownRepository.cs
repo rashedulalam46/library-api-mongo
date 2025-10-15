@@ -1,72 +1,79 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Library.Application.DTOs;
 using Library.Application.Interfaces;
 using Library.Domain.Entities;
 using Library.Infrastructure.Data;
-using Library.Application.DTOs;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
-namespace Library.Infrastructure.Repositories;
+namespace Library.Repositories;
+
 
 public class DropdownRepository : IDropdownRepository
 {
-    private readonly LibraryDbContext _context;
+    private readonly IMongoCollection<Countries> _countriesCollection;
+    private readonly IMongoCollection<Authors> _authorsCollection;
+    private readonly IMongoCollection<Publishers> _publishersCollection;
+    private readonly IMongoCollection<Categories> _categoriesCollection;
 
-    public DropdownRepository(LibraryDbContext context)
+    public DropdownRepository(IOptions<MongoDbSettings> mongoSettings)
     {
-        _context = context;
+        var client = new MongoClient(mongoSettings.Value.ConnectionString);
+        var database = client.GetDatabase(mongoSettings.Value.DatabaseName);
+
+        _countriesCollection = database.GetCollection<Countries>(mongoSettings.Value.CountriesCollectionName);
+        _authorsCollection = database.GetCollection<Authors>(mongoSettings.Value.AuthorsCollectionName);
+        _publishersCollection = database.GetCollection<Publishers>(mongoSettings.Value.PublishersCollectionName);
+        _categoriesCollection = database.GetCollection<Categories>(mongoSettings.Value.CategoriesCollectionName);
     }
 
     public async Task<IEnumerable<DropdownItem>> GetCountryDropdownAsync()
     {
-        return await _context.Countries
+        var countries = await _countriesCollection.Find(_ => true).ToListAsync();
+        return countries
             .Select(c => new DropdownItem
             {
                 Value = c.country_id.ToString(),
                 Text = c.country_name
             })
-            .OrderBy(c => c.Text)
-            .ToListAsync();
+            .OrderBy(c => c.Text);
     }
-
 
     public async Task<IEnumerable<DropdownItem>> GetAuthorDropdownAsync()
     {
-        return await _context.Authors
+        var authors = await _authorsCollection.Find(_ => true).ToListAsync();
+        return authors
             .Select(a => new DropdownItem
             {
                 Value = a.author_id.ToString(),
                 Text = a.author_name
             })
-            .OrderBy(a => a.Text)
-            .ToListAsync();
+            .OrderBy(a => a.Text);
     }
-
 
     public async Task<IEnumerable<DropdownItem>> GetPublisherDropdownAsync()
     {
-        return await _context.Publishers
+        var publishers = await _publishersCollection.Find(_ => true).ToListAsync();
+        return publishers
             .Select(p => new DropdownItem
             {
                 Value = p.publisher_id.ToString(),
                 Text = p.publisher_name
             })
-            .OrderBy(p => p.Text)
-            .ToListAsync();
+            .OrderBy(p => p.Text);
     }
-
 
     public async Task<IEnumerable<DropdownItem>> GetCategoryDropdownAsync()
     {
-        return await _context.Categories
+        var categories = await _categoriesCollection.Find(_ => true).ToListAsync();
+        return categories
             .Select(c => new DropdownItem
             {
                 Value = c.category_id.ToString(),
                 Text = c.category_name
             })
-            .OrderBy(c => c.Text)
-            .ToListAsync();
+            .OrderBy(c => c.Text);
     }
-
-
 }

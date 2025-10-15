@@ -1,59 +1,66 @@
 using Library.Application.Interfaces;
 using Library.Domain.Entities;
 using Library.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
-namespace Library.Infrastructure.Repositories;
+namespace Library.Repositories;
 
 public class AuthorRepository : IAuthorRepository
 {
-    private readonly LibraryDbContext _context;
+    private readonly IMongoCollection<Authors> _authorsCollection;
 
-    public AuthorRepository(LibraryDbContext context)
+    public AuthorRepository(IOptions<MongoDbSettings> mongoSettings)
     {
-        _context = context;
+        var client = new MongoClient(mongoSettings.Value.ConnectionString);
+        var database = client.GetDatabase(mongoSettings.Value.DatabaseName);
+        _authorsCollection = database.GetCollection<Authors>(mongoSettings.Value.AuthorsCollectionName);
     }
 
-    public async Task<IEnumerable<Authors>> GetAllAsync() =>
-        await _context.Authors.OrderBy(a => a.author_name).ToListAsync();
+    public async Task<IEnumerable<Authors>> GetAllAsync()
+    {
+        var authors = await _authorsCollection
+            .Find(_ => true)
+            .SortBy(a => a.author_name)
+            .ToListAsync();
 
-    public async Task<Authors?> GetByIdAsync(int id) =>
-        await _context.Authors.FindAsync(id);
+        return authors;
+    }
+
+    public async Task<Authors?> GetByIdAsync(int id)
+    {
+        return await _authorsCollection
+            .Find(a => a.author_id == id)
+            .FirstOrDefaultAsync();
+    }
 
     public async Task<Authors> AddAsync(Authors author)
     {
-        await _context.Authors.AddAsync(author);
-        await _context.SaveChangesAsync();
+        await _authorsCollection.InsertOneAsync(author);
         return author;
     }
 
     public async Task<Authors?> UpdateAsync(Authors author)
     {
-        var existing = await _context.Authors.FindAsync(author.author_id);
-        if (existing == null) return null;
+        var existing = await _authorsCollection
+            .Find(a => a.author_id == author.author_id)
+            .FirstOrDefaultAsync();
 
-        existing.author_name = author.author_name;
-        existing.country = author.country;
-        existing.address = author.address;
-        existing.phone = author.phone;
-        existing.email = author.email;
-        existing.active = author.active;
+        if (existing == null)
+            return null;
 
-        await _context.SaveChangesAsync();
-        return existing;
+        await _authorsCollection.ReplaceOneAsync(a => a.author_id == author.author_id, author);
+        return author;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var author = await _context.Authors.FindAsync(id);
-        if (author == null) return false;
-
-        _context.Authors.Remove(author);
-        await _context.SaveChangesAsync();
-        return true;
+        var result = await _authorsCollection.DeleteOneAsync(a => a.author_id == id);
+        return result.DeletedCount > 0;
     }
+
     public async Task<bool> ExistsByAuthorIdAsync(int authorId)
     {
-        return await _context.Authors.AnyAsync(a => a.author_id == authorId);
+        return await _authorsCollection.Find(a => a.author_id == authorId).AnyAsync();
     }
 }
