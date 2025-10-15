@@ -8,7 +8,7 @@ using Library.Infrastructure.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace Library.Repositories;
+namespace Library.Infrastructure.Repositories;
 
 
 public class DropdownRepository : IDropdownRepository

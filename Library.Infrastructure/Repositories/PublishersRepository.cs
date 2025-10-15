@@ -1,66 +1,72 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Library.Application.Interfaces;
 using Library.Domain.Entities;
 using Library.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Library.Infrastructure.Repositories;
 
 public class PublishersRepository : IPublishersRepository
 {
-    private readonly LibraryDbContext _context;
+    private readonly IMongoCollection<Publishers> _publishersCollection;
 
-    public PublishersRepository(LibraryDbContext context)
+    public PublishersRepository(IOptions<MongoDbSettings> mongoSettings)
     {
-        _context = context;
+        var client = new MongoClient(mongoSettings.Value.ConnectionString);
+        var database = client.GetDatabase(mongoSettings.Value.DatabaseName);
+        _publishersCollection = database.GetCollection<Publishers>(mongoSettings.Value.PublishersCollectionName);
     }
 
     // Get all publishers
-    public async Task<IEnumerable<Publishers>> GetAllAsync() =>
-        await _context.Publishers.OrderBy(p => p.publisher_name).ToListAsync();
+    public async Task<IEnumerable<Publishers>> GetAllAsync()
+    {
+        var publishers = await _publishersCollection.Find(_ => true).ToListAsync();
+        return publishers.OrderBy(p => p.publisher_name);
+    }
 
     // Get a publisher by ID
-    public async Task<Publishers?> GetByIdAsync(int id) =>
-        await _context.Publishers.FindAsync(id);
+    public async Task<Publishers?> GetByIdAsync(int id)
+    {
+        return await _publishersCollection
+            .Find(p => p.publisher_id == id)
+            .FirstOrDefaultAsync();
+    }
 
     // Add a new publisher
     public async Task<Publishers> AddAsync(Publishers publisher)
     {
-        await _context.Publishers.AddAsync(publisher);
-        await _context.SaveChangesAsync();
+        await _publishersCollection.InsertOneAsync(publisher);
         return publisher;
     }
 
     // Update an existing publisher
     public async Task<Publishers?> UpdateAsync(Publishers publisher)
     {
-        var existing = await _context.Publishers.FindAsync(publisher.publisher_id);
+        var existing = await _publishersCollection
+            .Find(p => p.publisher_id == publisher.publisher_id)
+            .FirstOrDefaultAsync();
+
         if (existing == null) return null;
 
-        // Manually update fields
-        existing.publisher_name = publisher.publisher_name;
-        existing.address = publisher.address;
-        existing.phone = publisher.phone;
-        existing.email = publisher.email;
-        existing.active = publisher.active;
-
-        await _context.SaveChangesAsync();
-        return existing;
+        await _publishersCollection.ReplaceOneAsync(p => p.publisher_id == publisher.publisher_id, publisher);
+        return publisher;
     }
 
     // Delete a publisher
     public async Task<bool> DeleteAsync(int id)
     {
-        var existing = await _context.Publishers.FindAsync(id);
-        if (existing == null) return false;
-
-        _context.Publishers.Remove(existing);
-        await _context.SaveChangesAsync();
-        return true;
+        var result = await _publishersCollection.DeleteOneAsync(p => p.publisher_id == id);
+        return result.DeletedCount > 0;
     }
+
+    // Check if publisher exists
     public async Task<bool> ExistsByPublisherIdAsync(int publisherId)
     {
-        return await _context.Publishers.AnyAsync(a => a.publisher_id == publisherId);
+        return await _publishersCollection
+            .Find(p => p.publisher_id == publisherId)
+            .AnyAsync();
     }
 }
