@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-//builder.Services.AddDbContext<LibraryDbContext>(options =>
-   // options.UseSqlServer(builder.Configuration.GetConnectionString("ConString")),
-   // ServiceLifetime.Scoped);
+
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDB"));
 
 // Register repositories and services 
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
