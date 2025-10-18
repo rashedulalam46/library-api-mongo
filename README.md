@@ -1,6 +1,6 @@
 # Library API (MongoDB + Docker)
 
-A .NET Core / .NET 9 Web API for managing a library system, backed by MS SQL Server.  
+A .NET Core / .NET 9 Web API for managing a library system, backed by MongoDB database.  
 This project is structured with clean architecture (Domain, Application, Infrastructure, API) and supports basic CRUD operations on books, authors, categories, publishers, etc.
 
 ---
@@ -37,7 +37,7 @@ LibraryApiSqlServer/
 **1. Clone the repository**
 
 ```bash
-   git clone https://github.com/rashedulalam46/library-api-sqlserver.git
+   git clone https://github.com/rashedulalam46/library-api-mongo.git
    cd library-api-sqlserver
 ```
 
