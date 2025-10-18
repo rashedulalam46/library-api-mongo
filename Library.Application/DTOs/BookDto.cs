@@ -37,20 +37,20 @@ namespace Library.Application.DTOs
     // DTO for reading/fetching book data
     public class BookReadDto
     {
-       
+
         public int book_id { get; set; }
-    public string? title { get; set; }
-    public string? description { get; set; }
-    public int? author_id { get; set; }
-    public int? category_id { get; set; }
-    public int? publisher_id { get; set; }
-    public string? author_name { get; set; }
-    public string? category_name { get; set; }
-    public string? publisher_name { get; set; }
-    public string? isbn { get; set; }
-    public decimal? price { get; set; }
-    public DateTime? publish_date { get; set; }
-    public bool? active { get; set; }
+        public string? title { get; set; }
+        public string? description { get; set; }
+        public int? author_id { get; set; }
+        public int? category_id { get; set; }
+        public int? publisher_id { get; set; }
+        public string? author_name { get; set; }
+        public string? category_name { get; set; }
+        public string? publisher_name { get; set; }
+        public string? isbn { get; set; }
+        public decimal? price { get; set; }
+        public DateTime? publish_date { get; set; }
+        public bool? active { get; set; }
 
     }
 

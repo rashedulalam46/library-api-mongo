@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LibraryApiMongo")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87d556f622c76116bba868a880af306c72abc1fd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a5f1101a3c0bacb39fb45119cdcde210cf8f074")]
 [assembly: System.Reflection.AssemblyProductAttribute("LibraryApiMongo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LibraryApiMongo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

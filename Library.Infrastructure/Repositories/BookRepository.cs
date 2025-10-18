@@ -29,35 +29,44 @@ public class BookRepository : IBookRepository
     // Get all books with joined names
     public async Task<IEnumerable<BookReadDto>> GetAllAsync()
     {
-        var books = await _booksCollection.Find(_ => true).ToListAsync();
-        var authors = await _authorsCollection.Find(_ => true).ToListAsync();
-        var categories = await _categoriesCollection.Find(_ => true).ToListAsync();
-        var publishers = await _publishersCollection.Find(_ => true).ToListAsync();
+        var pipeline = _booksCollection.Aggregate()
+        // Join authors
+        .Lookup("authors", "author_id", "author_id", "author")
+        // Join categories
+        .Lookup("categories", "category_id", "category_id", "category")
+        // Join publishers
+        .Lookup("publishers", "publisher_id", "publisher_id", "publisher")
+        // Unwind joined arrays (preserve nulls)
+        .Unwind("author", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true })
+        .Unwind("category", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true })
+        .Unwind("publisher", new AggregateUnwindOptions<BsonDocument> { PreserveNullAndEmptyArrays = true })
+        // Tell Mongo to output as BsonDocument
+        .As<BsonDocument>();
 
-        var result = books.Select(b =>
+        var docs = await pipeline.ToListAsync();
+
+        var result = docs.Select(b => new BookReadDto
         {
-            var author = authors.FirstOrDefault(a => a.author_id == b.author_id);
-            var category = categories.FirstOrDefault(c => c.category_id == b.category_id);
-            var publisher = publishers.FirstOrDefault(p => p.publisher_id == b.publisher_id);
-
-            return new BookReadDto
-            {
-                book_id = b.book_id,
-                title = b.title,
-                description = b.description,
-                author_id = b.author_id,
-                category_id = b.category_id,
-                publisher_id = b.publisher_id,
-                author_name = author?.author_name,
-                category_name = category?.category_name,
-                publisher_name = publisher?.publisher_name,
-                isbn = b.isbn,
-                price = b.price,
-                publish_date = b.publish_date,
-                active = b.active
-            };
-        })
-        .OrderBy(b => b.title);
+            book_id = b.Contains("book_id") ? b["book_id"].AsInt32 : 0,
+            title = b.GetValue("title", "").AsString,
+            description = b.GetValue("description", "").AsString,
+            author_id = b.Contains("author_id") ? b["author_id"].AsInt32 : (int?)null,
+            category_id = b.Contains("category_id") ? b["category_id"].AsInt32 : (int?)null,
+            publisher_id = b.Contains("publisher_id") ? b["publisher_id"].AsInt32 : (int?)null,
+            author_name = b.Contains("author") && b["author"].IsBsonDocument && b["author"].AsBsonDocument.Contains("author_name")
+                ? b["author"]["author_name"].AsString
+                : null,
+            category_name = b.Contains("category") && b["category"].IsBsonDocument && b["category"].AsBsonDocument.Contains("category_name")
+                ? b["category"]["category_name"].AsString
+                : null,
+            publisher_name = b.Contains("publisher") && b["publisher"].IsBsonDocument && b["publisher"].AsBsonDocument.Contains("publisher_name")
+                ? b["publisher"]["publisher_name"].AsString
+                : null,
+            isbn = b.GetValue("isbn", "").AsString,
+            price = b.Contains("price") && b["price"].IsNumeric ? b["price"].ToDecimal() : (decimal?)null,
+            publish_date = b.Contains("publish_date") && b["publish_date"].IsValidDateTime ? b["publish_date"].ToUniversalTime() : (DateTime?)null,
+            active = b.Contains("active") && b["active"].IsBoolean ? b["active"].ToBoolean() : (bool?)null
+        });
 
         return result;
     }
