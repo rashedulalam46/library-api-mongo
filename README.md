@@ -64,8 +64,14 @@ If you are using Docker, then use
 
 ```
 {
-  "ConnectionStrings": {
-    "ConString": "Server=host.docker.internal;Database=LibraryDb;User Id=…;Password=…;"
+  "MongoDB": {
+    "ConnectionString": "mongodb://host.docker.internal:27017",
+    "DatabaseName": "library",
+    "BooksCollectionName": "books",
+    "AuthorsCollectionName": "authors",
+    "PublishersCollectionName": "publishers",
+    "CategoriesCollectionName": "categories",
+    "CountriesCollectionName": "countries"
   }
 }
 ```
