@@ -46,9 +46,16 @@ LibraryApiSqlServer/
 Open appsettings.json or appsettings.Development.json, and set up your ConnectionStrings:DefaultConnection to point to your SQL Server.
 
 ```
+
 {
-  "ConnectionStrings": {
-    "ConString": "Server=YOUR_SERVER;Database=LibraryDb;User Id=…;Password=…;"
+  "MongoDB": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "library",
+    "BooksCollectionName": "books",
+    "AuthorsCollectionName": "authors",
+    "PublishersCollectionName": "publishers",
+    "CategoriesCollectionName": "categories",
+    "CountriesCollectionName": "countries"
   }
 }
 ```
@@ -121,5 +128,6 @@ dotnet publish --configuration Release
 - Feel free to fork or suggest changes via pull requests.
 - Add a LICENSE file if you have specific usage terms.
 - Please document style, code conventions, etc., in a CONTRIBUTING.md.
+
 
 
