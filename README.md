@@ -26,9 +26,9 @@ LibraryApiSqlServer/
 ## ⚙️ Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download) or compatible .NET version  
-- SQL Server instance (local or remote)
+- MongoDB (local or remote)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) for containerized setup (Optional)
-- A tool like **SQL Server Management Studio (SSMS)** for DB inspection (Optional)
+- A tool like **SMongoDB Compass** for DB inspection (Optional)
 
 ---
 
@@ -121,4 +121,5 @@ dotnet publish --configuration Release
 - Feel free to fork or suggest changes via pull requests.
 - Add a LICENSE file if you have specific usage terms.
 - Please document style, code conventions, etc., in a CONTRIBUTING.md.
+
 
