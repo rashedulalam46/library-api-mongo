@@ -9,11 +9,11 @@ using MongoDB.Driver;
 
 namespace Library.Infrastructure.Repositories;
 
-public class PublishersRepository : IPublishersRepository
+public class PublisherRepository : IPublisherRepository
 {
     private readonly IMongoCollection<Publishers> _publishersCollection;
 
-    public PublishersRepository(IOptions<MongoDbSettings> mongoSettings)
+    public PublisherRepository(IOptions<MongoDbSettings> mongoSettings)
     {
         var client = new MongoClient(mongoSettings.Value.ConnectionString);
         var database = client.GetDatabase(mongoSettings.Value.DatabaseName);

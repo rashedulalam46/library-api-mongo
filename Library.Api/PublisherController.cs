@@ -8,9 +8,9 @@ namespace Library.API.Controllers
     [Route("api/[controller]s")]
     public class PublisherController : ControllerBase
     {
-        private readonly PublishersService _service;
+        private readonly PublisherService _service;
 
-        public PublisherController(PublishersService service)
+        public PublisherController(PublisherService service)
         {
             _service = service;
         }

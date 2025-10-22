@@ -3,11 +3,11 @@ using Library.Domain.Entities;
 
 namespace Library.Application.Services;
 
-public class PublishersService
+public class PublisherService
 {
-    private readonly IPublishersRepository _repo;
+    private readonly IPublisherRepository _repo;
        private readonly Random _random = new Random();
-    public PublishersService(IPublishersRepository repo)
+    public PublisherService(IPublisherRepository repo)
     {
         _repo = repo;
     }
