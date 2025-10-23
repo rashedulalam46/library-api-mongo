@@ -17,6 +17,7 @@ FROM build AS publish
 ARG configuration=Release
 RUN dotnet publish "LibraryApiMongo.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
 
+
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
